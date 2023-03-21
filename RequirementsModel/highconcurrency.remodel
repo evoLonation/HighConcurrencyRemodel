@@ -166,7 +166,7 @@ UseCaseModel HighConcurrency {
 
 DomainModel HighConcurrency {
 
-	// @Sharding
+	// @HighStore
 	// @HighRead
 	Entity Item {
 		Barcode : Integer
