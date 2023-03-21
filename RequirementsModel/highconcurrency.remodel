@@ -113,6 +113,7 @@ UseCaseModel HighConcurrency {
 			result = true
 	}
 
+	// @High Priority
 	Contract BuyItemsService::enterItems(orderId : Integer, barcode : Integer, number : Integer) : Boolean {
 
 		definition:
@@ -165,11 +166,15 @@ UseCaseModel HighConcurrency {
 
 DomainModel HighConcurrency {
 
+	// @Sharding
+	// @HighRead
 	Entity Item {
 		Barcode : Integer
 		Name : String
 		Price : Real
 		StockNumber : Integer
+		// @WeakConsistency
+		Description: String
 
 		[Refer]
 		Sales : Sale* Association
@@ -209,6 +214,7 @@ DomainModel HighConcurrency {
 		inv Unique : Order.allInstance()->isUnique(d:Order | d.OrderId)
 	}
 
+	// @Sharding
 	Entity Shop {
 		ShopId : Integer
 		ShopName : String
