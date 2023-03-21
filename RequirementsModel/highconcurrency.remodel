@@ -1,0 +1,223 @@
+UseCaseModel HighConcurrency {
+
+	UC::registerUser
+	UC::registerShop
+	UC::buyItems definedBySSD(BuyItemsSSD)
+	UC::addItem
+	UC::addStockNumber
+	UC::modifyItem
+
+	Actor User {
+		buyItems
+		registerUser
+	}
+
+	Actor ShopKeeper {
+		registerShop
+	}
+
+	Interaction BuyItemsSSD {
+
+		[Participants: User BuyItemsService]
+
+		CallMessage::BuyItemsSSDCallMessage1(createOrder BuyItemsSSDCallMessage1SendingEnd -> BuyItemsSSDExecution1StartEnd)
+		ReturnMessage::BuyItemsSSDCallMessage1Return(BuyItemsSSDExecution1FinishEnd -> BuyItemsSSDCallMessage1ReturnReceivingEnd BuyItemsSSDCallMessage1)
+		CallMessage::BuyItemsSSDCallMessage3(enterItems BuyItemsSSDCallMessage3SendingEnd -> BuyItemsSSDExecution2StartEnd)
+		ReturnMessage::BuyItemsSSDCallMessage3Return(BuyItemsSSDExecution2FinishEnd -> BuyItemsSSDCallMessage3ReturnReceivingEnd BuyItemsSSDCallMessage3)
+		CallMessage::BuyItemsSSDCallMessage5(makePayment BuyItemsSSDCallMessage5SendingEnd -> BuyItemsSSDExecution3StartEnd)
+		ReturnMessage::BuyItemsSSDCallMessage5Return(BuyItemsSSDExecution3FinishEnd -> BuyItemsSSDCallMessage5ReturnReceivingEnd BuyItemsSSDCallMessage5)
+
+		Execution::BuyItemsSSDExecution1(BuyItemsService BuyItemsSSDExecution1StartEnd BuyItemsSSDExecution1FinishEnd)
+		Execution::BuyItemsSSDExecution2(BuyItemsService BuyItemsSSDExecution2StartEnd BuyItemsSSDExecution2FinishEnd)
+		Execution::BuyItemsSSDExecution3(BuyItemsService BuyItemsSSDExecution3StartEnd BuyItemsSSDExecution3FinishEnd)
+
+		CombinedFragment:: combinedFragement1 -> loop {
+
+			[Participants: BuyItemsService User]
+
+			combinedFragement1StartEnd -> combinedFragement1FinishEnd
+
+			Operand::hasMoreItem(condition1End combinedFragement1FinishEnd)
+		}
+
+		MessageEnd::BuyItemsSSDCallMessage1SendingEnd(User BuyItemsSSDCallMessage1)
+		ExecutionEnd::BuyItemsSSDExecution1StartEnd(BuyItemsService BuyItemsSSDExecution1)
+		ExecutionEnd::BuyItemsSSDExecution1FinishEnd(BuyItemsService BuyItemsSSDExecution1)
+		MessageEnd::BuyItemsSSDCallMessage1ReturnReceivingEnd(User BuyItemsSSDCallMessage1Return)
+		CombinedFragmentEnd::combinedFragement1StartEnd(combinedFragement1)
+		OperandEnd::condition1End(hasMoreItem)
+		MessageEnd::BuyItemsSSDCallMessage3SendingEnd(User BuyItemsSSDCallMessage3)
+		ExecutionEnd::BuyItemsSSDExecution2StartEnd(BuyItemsService BuyItemsSSDExecution2)
+		ExecutionEnd::BuyItemsSSDExecution2FinishEnd(BuyItemsService BuyItemsSSDExecution2)
+		MessageEnd::BuyItemsSSDCallMessage3ReturnReceivingEnd(User BuyItemsSSDCallMessage3Return)
+		CombinedFragmentEnd::combinedFragement1FinishEnd(combinedFragement1)
+		MessageEnd::BuyItemsSSDCallMessage5SendingEnd(User BuyItemsSSDCallMessage5)
+		ExecutionEnd::BuyItemsSSDExecution3StartEnd(BuyItemsService BuyItemsSSDExecution3)
+		ExecutionEnd::BuyItemsSSDExecution3FinishEnd(BuyItemsService BuyItemsSSDExecution3)
+		MessageEnd::BuyItemsSSDCallMessage5ReturnReceivingEnd(User BuyItemsSSDCallMessage5Return)
+
+	}
+
+	Service HighConcurrencySystem {
+
+		[Operation]
+		registerUser()
+		registerShop()
+
+	}
+
+	Service ThirdPartyServices {
+
+		[Operation]
+		makeWechatPayment(price)
+
+	}
+
+	Service BuyItemsService {
+
+		[Operation]
+		createOrder(userId, orderId)
+		enterItems(orderId, barcode, number)
+		makePayment(orderId)
+
+	}
+
+	Contract HighConcurrencySystem::registerUser() : Boolean {
+
+		precondition:
+			true
+		postcondition:
+			true
+	}
+
+	Contract HighConcurrencySystem::registerShop() : Boolean {
+
+		precondition:
+			true
+		postcondition:
+			true
+	}
+
+	Contract BuyItemsService::createOrder(userId : String, orderId : Integer) : Boolean {
+
+		definition:
+			order:Order = Order.allInstance()->any(o:Order|o.OrderId = orderId)
+
+		precondition:
+			order.oclIsUndefined() = true
+		postcondition:
+			let o:Order in
+			o.OrderId = orderId and
+			o.TotalPrice = 0 and
+			o.isPayed = false and
+			result = true
+	}
+
+	Contract BuyItemsService::enterItems(orderId : Integer, barcode : Integer, number : Integer) : Boolean {
+
+		definition:
+			order:Order = Order.allInstance()->any(o:Order | o.OrderId = orderId),
+			item:Item = Item.allInstance()->any(i:Item|i.barcode = barcode)
+
+		precondition:
+			order.oclIsUndefined() = false and
+			item.oclIsUndefined() = false
+		postcondition:
+			if
+				item.StockNumber > number
+			then
+				let sale:Sale in
+				item.StockNumber = item.StockNumber@pre - number and
+				sale.Number = number and
+				sale.Price = item.Price * number and
+				sale.Item = item and
+				sale.BelongedOrder = order and
+				order.TotalPrice = item.StockNumber and
+				result = true
+			else
+				result = false
+			endif
+	}
+
+	Contract BuyItemsService::makePayment(orderId : String) : Boolean {
+
+		definition:
+			order:Order = Order.allInstance()->any(o:Order | o.OrderId = orderId)
+
+		precondition:
+			order.oclIsUndefined() = false and
+			makeWechatPayment(order.TotalPrice)
+
+		postcondition:
+			order.IsPayed = true and
+			result = true
+	}
+
+	Contract ThirdPartyServices::makeWechatPayment(price : Real) : Boolean {
+
+		precondition:
+			true
+		postcondition:
+			true
+	}
+
+}
+
+DomainModel HighConcurrency {
+
+	Entity Item {
+		Barcode : Integer
+		Name : String
+		Price : Real
+		StockNumber : Integer
+
+		[Refer]
+		Sales : Sale* Association
+		BelongedShop : Shop ! Association
+		[INV]
+		inv Unique : Item.allInstance()->isUnique(d:Item | d.Barcode)
+	}
+
+	Entity User {
+		UserId : String
+		Username : String
+
+		[Refer]
+		Orders : Order* Association
+		[INV]
+		inv Unique : User.allInstance()->isUnique(d:User | d.UserId)
+	}
+
+	Entity Sale {
+		Number : Integer
+		Price : Real
+
+		[Refer]
+		Item : Item! Association
+		BelongedOrder : Order Association
+	}
+
+	Entity Order {
+		OrderId : Integer
+		TotalPrice : Real
+		IsPayed : Boolean
+
+		[Refer]
+		Sales : Sale* ! Association
+		BelongedUser : User ! Association
+		[INV]
+		inv Unique : Order.allInstance()->isUnique(d:Order | d.OrderId)
+	}
+
+	Entity Shop {
+		ShopId : Integer
+		ShopName : String
+
+		[Refer]
+		Items : Item* Association
+		[INV]
+		inv Unique : Shop.allInstance()->isUnique(d:Shop | d.ShopId)
+	}
+
+}
+
