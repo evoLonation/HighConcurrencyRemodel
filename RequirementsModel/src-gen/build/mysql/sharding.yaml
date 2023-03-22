@@ -4,8 +4,8 @@ metadata:
   name: mysql-sharding-config
 data:
   ddl.sql:  |
-    create database myproject;
-    use myproject;
+    CREATE DATABASE myproject;
+    USE myproject;
     CREATE TABLE Shop_0 (
     shop_id INT64 NOT NULL DEFAULT '0',
     shop_name VARCHAR(255) NOT NULL DEFAULT '',

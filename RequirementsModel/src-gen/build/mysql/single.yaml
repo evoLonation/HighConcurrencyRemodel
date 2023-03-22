@@ -4,8 +4,8 @@ metadata:
   name: mysql-config
 data:
   ddl.sql:  |
-    create database myproject;
-    use myproject;
+    CREATE DATABASE myproject;
+    USE myproject;
     CREATE TABLE User (
     user_id VARCHAR(255) NOT NULL DEFAULT '',
     username VARCHAR(255) NOT NULL DEFAULT '',

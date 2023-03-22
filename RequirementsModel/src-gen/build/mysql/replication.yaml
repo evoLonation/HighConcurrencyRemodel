@@ -16,8 +16,8 @@ data:
     change master to master_host='mysql-replication-0.mysql-replication',master_user='root',master_password='2002116yy',master_connect_retry=10;
     start slave;
   ddl.sql:  |
-    create database myproject;
-    use myproject;
+    CREATE DATABASE myproject;
+    USE myproject;
     CREATE TABLE Item (
     barcode INT64 NOT NULL DEFAULT '0',
     name VARCHAR(255) NOT NULL DEFAULT '',
