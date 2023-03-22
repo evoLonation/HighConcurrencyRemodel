@@ -202,7 +202,7 @@ DomainModel HighConcurrency {
 		Sales : Sale* Association
 		BelongedShop : Shop ! Association
 		[INV]
-		inv Unique : Item.allInstance()->isUnique(d:Item | d.Barcode)
+		inv UniqueBarcode : Item.allInstance()->isUnique(d:Item | d.Barcode)
 	}
 
 	Entity User {
@@ -212,7 +212,7 @@ DomainModel HighConcurrency {
 		[Refer]
 		Orders : Order* Association
 		[INV]
-		inv Unique : User.allInstance()->isUnique(d:User | d.UserId)
+		inv UniqueUserId : User.allInstance()->isUnique(d:User | d.UserId)
 	}
 
 	Entity Sale {
@@ -233,7 +233,7 @@ DomainModel HighConcurrency {
 		Sales : Sale* ! Association
 		BelongedUser : User ! Association
 		[INV]
-		inv Unique : Order.allInstance()->isUnique(d:Order | d.OrderId)
+		inv UniqueOrderId : Order.allInstance()->isUnique(d:Order | d.OrderId)
 	}
 
 	// @HighStore
@@ -244,7 +244,7 @@ DomainModel HighConcurrency {
 		[Refer]
 		Items : Item* Association
 		[INV]
-		inv Unique : Shop.allInstance()->isUnique(d:Shop | d.ShopId)
+		inv UniqueShopId : Shop.allInstance()->isUnique(d:Shop | d.ShopId)
 	}
 
 }
