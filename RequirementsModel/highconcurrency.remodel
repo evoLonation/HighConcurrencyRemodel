@@ -6,10 +6,12 @@ UseCaseModel HighConcurrency {
 	UC::addItem
 	UC::addStockNumber
 	UC::modifyItem
+	UC::checkItem
 
 	Actor User {
 		buyItems
 		registerUser
+		checkItem
 	}
 
 	Actor ShopKeeper {
@@ -63,6 +65,8 @@ UseCaseModel HighConcurrency {
 		[Operation]
 		registerUser()
 		registerShop()
+		addItem(shopId, barcode, name, description, price, stockNumber)
+		checkItem(barcode)
 
 	}
 
@@ -113,7 +117,7 @@ UseCaseModel HighConcurrency {
 			result = true
 	}
 
-	// @High Priority
+	// @HighPriority
 	Contract BuyItemsService::enterItems(orderId : Integer, barcode : Integer, number : Integer) : Boolean {
 
 		definition:
@@ -162,18 +166,36 @@ UseCaseModel HighConcurrency {
 			true
 	}
 
+	Contract HighConcurrencySystem::addItem(shopId : Integer, barcode : Integer, name : String, description : String, price: Real, stockNumber : Integer) : Boolean {
+
+		precondition:
+			true
+		postcondition:
+			true
+	}
+
+	// @WeakConsistency
+	Contract HighConcurrencySystem::checkItem(barcode : String) : Item {
+
+		definition:
+			item:Item = Item.allInstance()->any(i:Item | i.Barcode = barcode)
+
+		precondition:
+			item.oclIsUndefined() = false
+		postcondition:
+			result = item
+	}
+
 }
 
 DomainModel HighConcurrency {
 
-	// @HighStore
 	// @HighRead
 	Entity Item {
 		Barcode : Integer
 		Name : String
 		Price : Real
 		StockNumber : Integer
-		// @WeakConsistency
 		Description: String
 
 		[Refer]
@@ -214,7 +236,7 @@ DomainModel HighConcurrency {
 		inv Unique : Order.allInstance()->isUnique(d:Order | d.OrderId)
 	}
 
-	// @Sharding
+	// @HighStore
 	Entity Shop {
 		ShopId : Integer
 		ShopName : String
