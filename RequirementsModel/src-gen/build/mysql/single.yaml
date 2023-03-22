@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+data:
+  ddl.sql:  |
+    create database myproject;
+    use myproject;
+    CREATE TABLE User (
+    user_id VARCHAR(255) NOT NULL DEFAULT '',
+    username VARCHAR(255) NOT NULL DEFAULT '',
+    PRIMARY KEY (user_id)
+    );
+    CREATE TABLE Sale (
+    generate_id INT64 NOT NULL DEFAULT '0',
+    number INT64 NOT NULL DEFAULT '0',
+    price DOUBLE NOT NULL DEFAULT '0',
+    item_barcode INT64 NOT NULL DEFAULT '0',
+    belonged_order_order_id INT64 NOT NULL DEFAULT '0',
+    PRIMARY KEY (generate_id)
+    );
+    CREATE TABLE Order (
+    order_id INT64 NOT NULL DEFAULT '0',
+    total_price DOUBLE NOT NULL DEFAULT '0',
+    is_payed BOOLEAN NOT NULL DEFAULT 'FALSE',
+    belonged_user_user_id VARCHAR(255) NOT NULL DEFAULT '',
+    PRIMARY KEY (order_id)
+    );
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:  
+    matchLabels:
+      app: mysql
+  replicas: 1 
+  template: 
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0.32
+        ports:
+          - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: 2002116yy
+        volumeMounts:
+        - name: scripts
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: scripts
+        configMap:
+          name: mysql-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
