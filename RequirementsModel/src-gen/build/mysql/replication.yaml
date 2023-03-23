@@ -18,7 +18,7 @@ data:
   ddl.sql:  |
     CREATE DATABASE myproject;
     USE myproject;
-    CREATE TABLE Item (
+    CREATE TABLE item (
     barcode INT64 NOT NULL DEFAULT '0',
     name VARCHAR(255) NOT NULL DEFAULT '',
     price DOUBLE NOT NULL DEFAULT '0',

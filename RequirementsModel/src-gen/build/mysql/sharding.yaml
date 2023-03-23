@@ -6,17 +6,17 @@ data:
   ddl.sql:  |
     CREATE DATABASE myproject;
     USE myproject;
-    CREATE TABLE Shop_0 (
+    CREATE TABLE shop_0 (
     shop_id INT64 NOT NULL DEFAULT '0',
     shop_name VARCHAR(255) NOT NULL DEFAULT '',
     PRIMARY KEY (shop_id)
     );
-    CREATE TABLE Shop_1 (
+    CREATE TABLE shop_1 (
     shop_id INT64 NOT NULL DEFAULT '0',
     shop_name VARCHAR(255) NOT NULL DEFAULT '',
     PRIMARY KEY (shop_id)
     );
-    CREATE TABLE Shop_2 (
+    CREATE TABLE shop_2 (
     shop_id INT64 NOT NULL DEFAULT '0',
     shop_name VARCHAR(255) NOT NULL DEFAULT '',
     PRIMARY KEY (shop_id)
